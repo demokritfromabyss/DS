@@ -11,8 +11,8 @@
 
 | Project name | Description | Used libraries | Status |
 | :---------------------- | :---------------------- | :---------------------- |:---------------------- |
-| [Video games](https://github.com/demokritfromabyss/DS/blob/main/1.%20Video%20games/Video_games.ipynb) |  Анализ данных в сфере продаж видеоигр.| *Pandas, Matplotlib, Seaborn |Done |
-
+| [Video games](https://github.com/demokritfromabyss/DS/blob/main/1.%20Video%20games/Video_games.ipynb) |  Data Analysis in the Video Game Sales Sector| Pandas, Matplotlib, Seaborn, Numpy, Scipy |Done |
+| [HR analysis](https://github.com/demokritfromabyss/DS/blob/main/2.%20HR%20analysis/HR%20analysis.ipynb) |  Data Analysis in the HR company| Pandas, Matplotlib, Seaborn, Numpy, Scipy |Done |
 
 
 ### My contacts 
