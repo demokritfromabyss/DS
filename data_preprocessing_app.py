@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,84 +5,84 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 
-# Загрузка данных
+# Load data
 def load_data():
-    uploaded_file = st.file_uploader("Загрузите CSV файл", type=["csv"])
+    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
     if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         return data
     return None
 
-# Вывод общей информации по датасетам
+# Display general information about the dataset
 def data_set_info(data):
-    st.subheader("Общая информация о датасете:")
+    st.subheader("Dataset Overview:")
     st.write(data.head())
-    st.write("\n")
-    st.write(f"Размер данных: {data.shape}")
-    st.write(f"Типы данных: {data.dtypes}")
-    st.write(f"Информация о пропусках: {data.isnull().sum()}")
+    st.write("\\n")
+    st.write(f"Data dimensions: {data.shape}")
+    st.write(f"Data types: {data.dtypes}")
+    st.write(f"Missing values: {data.isnull().sum()}")
 
-# Подсчет уникальных значений для строковых признаков
+# Check unique values for categorical features
 def check_unique_values(data, exclude_columns=None):
     if exclude_columns is None:
         exclude_columns = []
         
-    st.subheader("Уникальные значения в столбцах:")
+    st.subheader("Unique values in columns:")
     for column in data.columns:
         if column in exclude_columns:
-            continue  # Пропускаем ненужные столбцы
-        if data[column].dtype == 'object':  # Проверяем только строковые данные
+            continue  # Skip unnecessary columns
+        if data[column].dtype == 'object':  # Check only categorical data
             unique_values = data[column].unique()
             unique_count = len(unique_values)
-            st.write(f"{column}: {unique_values} (Уникальных: {unique_count})")
+            st.write(f"{column}: {unique_values} (Unique: {unique_count})")
 
-# Обработка пропусков
+# Handle missing data
 def handle_missing_data(data):
-    st.subheader("Обработка пропусков:")
-    method = st.selectbox("Выберите метод обработки пропусков", ["Удалить строки", "Заполнить медианой", "Заполнить средним"])
+    st.subheader("Handling missing values:")
+    method = st.selectbox("Choose a method to handle missing values", ["Drop rows", "Fill with median", "Fill with mean"])
     
-    if method == "Удалить строки":
+    if method == "Drop rows":
         data = data.dropna()
-        st.write("Пропущенные строки были удалены.")
-    elif method == "Заполнить медианой":
+        st.write("Missing rows have been dropped.")
+    elif method == "Fill with median":
         data = data.fillna(data.median())
-        st.write("Пропущенные значения были заполнены медианой.")
-    elif method == "Заполнить средним":
+        st.write("Missing values have been filled with the median.")
+    elif method == "Fill with mean":
         data = data.fillna(data.mean())
-        st.write("Пропущенные значения были заполнены средним значением.")
+        st.write("Missing values have been filled with the mean.")
     
     return data
 
-# Удаление дубликатов
+# Remove duplicates
 def remove_duplicates(data):
-    st.subheader("Удаление дубликатов:")
-    if st.button("Удалить дубликаты"):
+    st.subheader("Removing duplicates:")
+    if st.button("Remove duplicates"):
         initial_shape = data.shape[0]
         data = data.drop_duplicates()
-        st.write(f"Удалено {initial_shape - data.shape[0]} дубликатов.")
+        st.write(f"Removed {initial_shape - data.shape[0]} duplicates.")
     return data
 
-# Преобразование категориальных признаков в числовые
+# Encode categorical features
 def encode_categorical_data(data):
-    st.subheader("Преобразование категориальных признаков:")
+    st.subheader("Encoding categorical features:")
     categorical_columns = data.select_dtypes(include=['object']).columns
     if len(categorical_columns) > 0:
-        encoding_method = st.selectbox("Выберите метод кодирования", ["One-Hot Encoding", "Label Encoding"])
+        encoding_method = st.selectbox("Choose encoding method", ["One-Hot Encoding", "Label Encoding"])
         for column in categorical_columns:
             if encoding_method == "One-Hot Encoding":
                 data = pd.get_dummies(data, columns=[column], prefix=[column])
-                st.write(f"{column} был преобразован с помощью One-Hot Encoding.")
+                st.write(f"{column} has been transformed using One-Hot Encoding.")
             elif encoding_method == "Label Encoding":
                 le = LabelEncoder()
                 data[column] = le.fit_transform(data[column])
-                st.write(f"{column} был преобразован с помощью Label Encoding.")
+                st.write(f"{column} has been transformed using Label Encoding.")
     else:
-        st.write("Нет категориальных признаков для кодирования.")
+        st.write("No categorical features for encoding.")
     return data
 
-# Очистка выбросов (IQR метод)
+# Remove outliers (using IQR method)
 def remove_outliers(data):
-    st.subheader("Удаление выбросов:")
+    st.subheader("Removing outliers:")
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
         Q1 = data[column].quantile(0.25)
@@ -93,67 +92,67 @@ def remove_outliers(data):
         upper_bound = Q3 + 1.5 * IQR
         initial_size = data.shape[0]
         data = data[(data[column] >= lower_bound) & (data[column] <= upper_bound)]
-        st.write(f"Для {column} выбросы были удалены. Уменьшение размерности с {initial_size} до {data.shape[0]}")
+        st.write(f"For {column}, outliers have been removed. Data reduced from {initial_size} to {data.shape[0]}")
     return data
 
-# Визуализация данных
+# Visualize data
 def visualize_data(data):
-    st.subheader("Графики для числовых признаков:")
+    st.subheader("Charts for numerical features:")
 
-    # Гистограммы для числовых признаков
+    # Histograms for numerical features
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
-        st.write(f"Гистограмма для {column}:")
+        st.write(f"Histogram for {column}:")
         fig, ax = plt.subplots()
         data[column].hist(bins=20, ax=ax)
-        ax.set_title(f'Гистограмма: {column}')
+        ax.set_title(f'Histogram: {column}')
         st.pyplot(fig)
     
-    # Диаграмма рассеяния (scatter plot) для пар признаков
-    st.write("Диаграмма рассеяния для двух признаков:")
-    col1, col2 = st.selectbox("Выберите два числовых признака для диаграммы рассеяния", numeric_columns, index=(0, 1))
+    # Scatter plot for two features
+    st.write("Scatter plot for two features:")
+    col1, col2 = st.selectbox("Choose two numerical features for scatter plot", numeric_columns, index=(0, 1))
     fig, ax = plt.subplots()
     ax.scatter(data[col1], data[col2])
     ax.set_xlabel(col1)
     ax.set_ylabel(col2)
-    ax.set_title(f"Диаграмма рассеяния: {col1} vs {col2}")
+    ax.set_title(f"Scatter plot: {col1} vs {col2}")
     st.pyplot(fig)
 
-    # Корреляционная матрица
-    st.write("Корреляционная матрица:")
+    # Correlation matrix
+    st.write("Correlation matrix:")
     corr_matrix = data.corr()
     fig, ax = plt.subplots()
     sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-    ax.set_title("Корреляционная матрица")
+    ax.set_title("Correlation Matrix")
     st.pyplot(fig)
 
-# Основная функция для приложения Streamlit
+# Main function for the Streamlit app
 def main():
-    st.title("Предобработка и анализ данных")
+    st.title("Data Preprocessing and Analysis")
     
-    # Загрузка данных
+    # Load data
     data = load_data()
     
     if data is not None:
-        # Вывод общей информации
+        # Display general information
         data_set_info(data)
 
-        # Обработка пропусков
+        # Handle missing data
         data = handle_missing_data(data)
 
-        # Удаление дубликатов
+        # Remove duplicates
         data = remove_duplicates(data)
 
-        # Преобразование категориальных признаков
+        # Encode categorical features
         data = encode_categorical_data(data)
 
-        # Удаление выбросов
+        # Remove outliers
         data = remove_outliers(data)
 
-        # Проверка уникальных значений
+        # Check unique values
         check_unique_values(data)
 
-        # Визуализация данных
+        # Visualize data
         visualize_data(data)
 
 if __name__ == "__main__":
