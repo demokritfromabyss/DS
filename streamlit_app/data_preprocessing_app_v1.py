@@ -37,6 +37,14 @@ def display_dataset_info(data):
     st.write(data.duplicated().sum())
 
 def reset_app():
+    if "processed_data" in st.session_state:
+        del st.session_state.processed_data
+    if "show_histograms" in st.session_state:
+        del st.session_state.show_histograms
+    if "show_correlation_matrix" in st.session_state:
+        del st.session_state.show_correlation_matrix
+    st.session_state.processed_data = load_data(DATASET_URL)
+    st.rerun()
     """Reset all changes and reload original dataset."""
     st.session_state.processed_data = load_data(DATASET_URL)
     st.experimental_rerun()
@@ -82,6 +90,7 @@ def main():
     if st.button("Delete Selected Columns"):
         data.drop(columns=columns_to_delete, inplace=True)
         st.session_state.processed_data = data.copy(deep=True)
+        st.rerun()
         st.success("Selected columns deleted.")
         display_dataset_info(data)
     
