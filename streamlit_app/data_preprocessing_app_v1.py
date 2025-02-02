@@ -5,155 +5,139 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 
-# Load data
-def load_data():
-    uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
-    if uploaded_file is not None:
-        data = pd.read_csv(uploaded_file)
+# 📌 URL to the dataset on GitHub (replace with your own link!)
+DATASET_URL = "https://raw.githubusercontent.com/your-username/your-repo/main/your-dataset.csv"
+
+# Function to load data from GitHub
+@st.cache_data
+def load_data(url):
+    """Load dataset from GitHub and handle errors."""
+    try:
+        data = pd.read_csv(url)
         return data
-    return None
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+        return None
 
-# Display general information about the dataset
+# Function to display dataset overview
 def data_set_info(data):
-    st.subheader("Dataset Overview:")
-    st.write(data.head())
-    st.write("\\n")
-    st.write(f"Data dimensions: {data.shape}")
-    st.write(f"Data types: {data.dtypes}")
-    st.write(f"Missing values: {data.isnull().sum()}")
+    """Display dataset overview: head, shape, data types, and missing values."""
+    st.subheader("Dataset Overview 📊")
+    st.write(data.head())  # Display first 5 rows
+    st.write(f"📏 Shape: {data.shape}")
+    st.write(f"📊 Data types: {data.dtypes}")
+    st.write("❓ Missing values:", data.isnull().sum())
 
-# Check unique values for categorical features
-def check_unique_values(data, exclude_columns=None):
-    if exclude_columns is None:
-        exclude_columns = []
-        
-    st.subheader("Unique values in columns:")
-    for column in data.columns:
-        if column in exclude_columns:
-            continue  # Skip unnecessary columns
-        if data[column].dtype == 'object':  # Check only categorical data
-            unique_values = data[column].unique()
-            unique_count = len(unique_values)
-            st.write(f"{column}: {unique_values} (Unique: {unique_count})")
+# Function to check unique values in categorical columns
+def check_unique_values(data):
+    """Check and display unique values for categorical columns."""
+    st.subheader("Unique values in categorical features 🔍")
+    for column in data.select_dtypes(include=['object']).columns:
+        unique_values = data[column].unique()
+        st.write(f"🔹 {column}: {len(unique_values)} unique values")
 
-# Handle missing data
+# Function to handle missing data
 def handle_missing_data(data):
-    st.subheader("Handling missing values:")
-    method = st.selectbox("Choose a method to handle missing values", ["Drop rows", "Fill with median", "Fill with mean"])
+    """Handle missing data by dropping rows or filling with mean/median."""
+    st.subheader("Handling Missing Values ❓")
+    method = st.selectbox("Choose method", ["Drop rows", "Fill with median", "Fill with mean"])
     
     if method == "Drop rows":
         data = data.dropna()
-        st.write("Missing rows have been dropped.")
+        st.write("❌ Missing rows removed.")
     elif method == "Fill with median":
-        data = data.fillna(data.median())
-        st.write("Missing values have been filled with the median.")
+        data.fillna(data.median(), inplace=True)
+        st.write("📉 Missing values filled with median.")
     elif method == "Fill with mean":
-        data = data.fillna(data.mean())
-        st.write("Missing values have been filled with the mean.")
+        data.fillna(data.mean(), inplace=True)
+        st.write("📈 Missing values filled with mean.")
     
     return data
 
-# Remove duplicates
+# Function to remove duplicate rows
 def remove_duplicates(data):
-    st.subheader("Removing duplicates:")
-    if st.button("Remove duplicates"):
-        initial_shape = data.shape[0]
-        data = data.drop_duplicates()
-        st.write(f"Removed {initial_shape - data.shape[0]} duplicates.")
+    """Remove duplicate rows from the dataset."""
+    st.subheader("Removing Duplicates 🚀")
+    initial_size = data.shape[0]
+    data = data.drop_duplicates()
+    st.write(f"✅ Removed {initial_size - data.shape[0]} duplicate rows.")
     return data
 
-# Encode categorical features
+# Function to encode categorical data
 def encode_categorical_data(data):
-    st.subheader("Encoding categorical features:")
+    """Convert categorical data into numerical format (One-Hot or Label Encoding)."""
+    st.subheader("Encoding Categorical Features 🔢")
     categorical_columns = data.select_dtypes(include=['object']).columns
-    if len(categorical_columns) > 0:
+    
+    if categorical_columns.any():
         encoding_method = st.selectbox("Choose encoding method", ["One-Hot Encoding", "Label Encoding"])
+        
         for column in categorical_columns:
             if encoding_method == "One-Hot Encoding":
                 data = pd.get_dummies(data, columns=[column], prefix=[column])
-                st.write(f"{column} has been transformed using One-Hot Encoding.")
+                st.write(f"🎭 {column} encoded using One-Hot Encoding.")
             elif encoding_method == "Label Encoding":
                 le = LabelEncoder()
                 data[column] = le.fit_transform(data[column])
-                st.write(f"{column} has been transformed using Label Encoding.")
+                st.write(f"🔢 {column} encoded using Label Encoding.")
     else:
-        st.write("No categorical features for encoding.")
+        st.write("✅ No categorical features to encode.")
+    
     return data
 
-# Remove outliers (using IQR method)
+# Function to remove outliers using IQR method
 def remove_outliers(data):
-    st.subheader("Removing outliers:")
+    """Remove outliers using the Interquartile Range (IQR) method."""
+    st.subheader("Removing Outliers ✂")
     numeric_columns = data.select_dtypes(include=[np.number]).columns
+    
     for column in numeric_columns:
-        Q1 = data[column].quantile(0.25)
-        Q3 = data[column].quantile(0.75)
+        Q1, Q3 = data[column].quantile([0.25, 0.75])
         IQR = Q3 - Q1
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
+        lower, upper = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
         initial_size = data.shape[0]
-        data = data[(data[column] >= lower_bound) & (data[column] <= upper_bound)]
-        st.write(f"For {column}, outliers have been removed. Data reduced from {initial_size} to {data.shape[0]}")
+        data = data[(data[column] >= lower) & (data[column] <= upper)]
+        st.write(f"📉 {column}: Outliers removed. Rows reduced from {initial_size} to {data.shape[0]}")
+    
     return data
 
-# Visualize data
+# Function to visualize data
 def visualize_data(data):
-    st.subheader("Charts for numerical features:")
+    """Generate histograms and correlation matrix for numerical features."""
+    st.subheader("Data Visualization 📊")
 
-    # Histograms for numerical features
+    # Histograms for numerical columns
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
-        st.write(f"Histogram for {column}:")
         fig, ax = plt.subplots()
         data[column].hist(bins=20, ax=ax)
-        ax.set_title(f'Histogram: {column}')
+        ax.set_title(f"Histogram: {column}")
         st.pyplot(fig)
-    
-    # Scatter plot for two features
-    st.write("Scatter plot for two features:")
-    col1, col2 = st.selectbox("Choose two numerical features for scatter plot", numeric_columns, index=(0, 1))
-    fig, ax = plt.subplots()
-    ax.scatter(data[col1], data[col2])
-    ax.set_xlabel(col1)
-    ax.set_ylabel(col2)
-    ax.set_title(f"Scatter plot: {col1} vs {col2}")
-    st.pyplot(fig)
 
-    # Correlation matrix
-    st.write("Correlation matrix:")
+    # Correlation matrix heatmap
+    st.subheader("Correlation Matrix 🔗")
     corr_matrix = data.corr()
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 6))
     sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-    ax.set_title("Correlation Matrix")
     st.pyplot(fig)
 
-# Main function for the Streamlit app
+# Main function for Streamlit app
 def main():
-    st.title("Data Preprocessing and Analysis")
+    """Main function to run the Streamlit app."""
+    st.title("Automated Data Preprocessing App 🚀")
     
-    # Load data
-    data = load_data()
+    # Load dataset from GitHub
+    data = load_data(DATASET_URL)
     
     if data is not None:
-        # Display general information
-        data_set_info(data)
+        data_set_info(data)           # Display dataset overview
+        data = handle_missing_data(data)  # Handle missing values
+        data = remove_duplicates(data)    # Remove duplicate rows
+        data = encode_categorical_data(data)  # Encode categorical features
+        data = remove_outliers(data)    # Remove outliers
+        check_unique_values(data)       # Check unique values
+        visualize_data(data)            # Generate data visualizations
 
-        # Handle missing data
-        data = handle_missing_data(data)
-
-        # Remove duplicates
-        data = remove_duplicates(data)
-
-        # Encode categorical features
-        data = encode_categorical_data(data)
-
-        # Remove outliers
-        data = remove_outliers(data)
-
-        # Check unique values
-        check_unique_values(data)
-
-        # Visualize data
-        visualize_data(data)
-
+# Run the Streamlit app
 if __name__ == "__main__":
     main()
