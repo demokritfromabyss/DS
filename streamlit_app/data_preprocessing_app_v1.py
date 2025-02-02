@@ -58,7 +58,7 @@ def main():
         if st.button("Start Application"):
             st.session_state.app_started = True
             st.session_state.processed_data = load_data(DATASET_URL)
-            st.experimental_rerun()
+            
         return
     
     
@@ -81,13 +81,9 @@ def main():
     columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
     if st.button("Delete Selected Columns"):
         data.drop(columns=columns_to_delete, inplace=True)
-        st.session_state.processed_data = data.copy(deep=True)
-        st.experimental_rerun()
-        st.success("Selected columns deleted.")
-        data.drop(columns=columns_to_delete, inplace=True)
-        st.session_state.processed_data = data.copy(deep=True)
-        st.experimental_rerunerun()
-        st.success("Selected columns deleted.")
+    st.session_state.processed_data = data.copy(deep=True)
+    st.success("Selected columns deleted.")
+    display_dataset_info(data)
         display_dataset_info(data)
     
     st.subheader("Change Data Types 🔄")
