@@ -88,7 +88,7 @@ def main():
         
     
     st.subheader("Change Data Types 🔄")
-    selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
+    selected_columns = st.multiselect("Select columns to convert", options=st.session_state.processed_data.columns.tolist())
     target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
 
     if st.button("Convert Data Type"):
@@ -113,20 +113,25 @@ def main():
     
     # Step 5: Histograms
     st.subheader("Data Visualization 📊")
-    if st.button("Generate Histograms for All Features"):
+    selected_hist_columns = st.multiselect("Select columns for histograms", options=data.select_dtypes(include=[np.number]).columns.tolist())
+    if st.button("Generate Histograms"):
         st.session_state.show_histograms = True
 
-    if "show_histograms" in st.session_state and st.session_state.show_histograms:
+    if "show_histograms" in st.session_state and st.session_state.show_histograms and selected_hist_columns:
         st.subheader("Feature Histograms")
-        numeric_columns = data.select_dtypes(include=[np.number]).columns
+        
         if len(numeric_columns) > 0:
-            fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+            fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
             if len(numeric_columns) == 1:
                 axes = [axes]
-            for ax, column in zip(np.atleast_1d(axes), numeric_columns):
+            for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
+            ax.hist(data[column].dropna(), bins=20, edgecolor='black')
+            ax.set_title(f"Histogram: {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
                 ax.hist(data[column].dropna(), bins=20, edgecolor='black')
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
+                ax.set_title(f"Histogram: {selected_hist_column}")
+                ax.set_xlabel(selected_hist_column)
                 ax.set_ylabel("Frequency")
             st.pyplot(fig)
         else:
