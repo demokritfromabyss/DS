@@ -24,7 +24,7 @@ def convert_data_types(data):
     """Allow user to select columns and change their data types."""
     st.subheader("Change Data Types 🔄")
     selected_columns = st.multiselect("Select columns to convert", data.columns)
-    target_type = st.selectbox("Select target data type", ["int", "float", "object"])
+    target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime"])
     
     if st.button("Convert Data Type"):  
         for col in selected_columns:
@@ -34,6 +34,8 @@ def convert_data_types(data):
                 data[col] = pd.to_numeric(data[col], errors='coerce')
             elif target_type == "object":
                 data[col] = data[col].astype(str)
+            elif target_type == "datetime":
+                data[col] = pd.to_datetime(data[col], errors='coerce')
         st.success("Data types converted successfully!")
     return data
 
@@ -65,12 +67,18 @@ def main():
     data = load_data(DATASET_URL)
     
     if data is not None:
-        # Slider for selecting number of rows
-        row_count = st.slider("Select number of rows to display", min_value=10, max_value=len(data), value=10)
-        st.write(data.head(row_count))
+        # Slider for selecting number of rows to process
+        row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
+        data = data.iloc[:row_count]  # Process only selected number of rows
+        
+        st.write(data.head())
         
         # Convert data types
         data = convert_data_types(data)
+        
+        # Show updated dataset
+        st.subheader("Updated Dataset")
+        st.write(data.head())
         
         # Visualizations
         visualize_data(data)
