@@ -43,7 +43,7 @@ def reset_app():
         del st.session_state.show_histograms
     if "show_correlation_matrix" in st.session_state:
         del st.session_state.show_correlation_matrix
-    st.session_state.processed_data = load_data(DATASET_URL)erun()
+    st.session_state.processed_data = load_data(DATASET_URL)
     """Reset all changes and reload original dataset."""
     st.session_state.processed_data = load_data(DATASET_URL)
     st.experimental_rerun()
@@ -65,7 +65,7 @@ def main():
         if st.button("Start Application"):
             st.session_state.app_started = True
             st.session_state.processed_data = load_data(DATASET_URL)
-            st.experimental_rerun()erun()
+            st.experimental_rerun()
         return
     
     st.sidebar.button("🔄 Reset", on_click=reset_app)
@@ -91,7 +91,6 @@ def main():
         st.session_state.processed_data = data.copy(deep=True)
         st.experimental_rerun()
         st.success("Selected columns deleted.")
-        return
         data.drop(columns=columns_to_delete, inplace=True)
         st.session_state.processed_data = data.copy(deep=True)
         st.rerun()
