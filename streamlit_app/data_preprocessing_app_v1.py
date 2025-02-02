@@ -121,7 +121,7 @@ def main():
             fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
             if len(numeric_columns) == 1:
                 axes = [axes]
-            for ax, column in zip(axes, numeric_columns):
+            for ax, column in zip(np.atleast_1d(axes), numeric_columns):
                 ax.hist(data[column].dropna(), bins=20, edgecolor='black')
                 ax.set_title(f"Histogram: {column}")
                 ax.set_xlabel(column)
