@@ -6,7 +6,6 @@ import seaborn as sns
 from phik import phik_matrix
 from sklearn.preprocessing import LabelEncoder
 import io
-
 # URL to dataset on GitHub
 DATASET_URL = "https://raw.githubusercontent.com/demokritfromabyss/DS/refs/heads/main/streamlit_app/contract_new_streamlit.csv"
 
