@@ -88,7 +88,7 @@ def main():
         
     
     st.subheader("Change Data Types 🔄")
-    selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
+    selected_columns = st.multiselect("Select columns to convert", options=st.session_state.processed_data.columns.tolist())
     target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
 
     if st.button("Convert Data Type"):
@@ -125,8 +125,10 @@ def main():
             if len(selected_hist_columns) == 1:
                 axes = [axes]
             for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
-            
-            ax.set_title(f"Histogram: {column}")
+                ax.hist(data[column].dropna(), bins=20, edgecolor='black')
+                ax.set_title(f"Histogram: {column}")
+                ax.set_xlabel(column)
+                ax.set_ylabel("Frequency")
             ax.set_xlabel(column)
             
             ax.set_title(f"Histogram: {column}")
