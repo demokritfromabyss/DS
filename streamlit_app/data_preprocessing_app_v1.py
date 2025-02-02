@@ -59,7 +59,10 @@ def main():
     data = st.session_state.processed_data.copy()
     if data is not None and not data.empty:
         max_rows = max(10, min(len(data), 10000))
+        if max_rows > 10:
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
+    else:
+        row_count = max_rows
         data = data.iloc[:row_count]
     else:
         st.warning("Dataset is empty or not loaded properly.")
