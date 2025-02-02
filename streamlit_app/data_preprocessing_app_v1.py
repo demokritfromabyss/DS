@@ -6,7 +6,7 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 
 # 📌 URL to the dataset on GitHub (replace with your own link!)
-DATASET_URL = "https://raw.githubusercontent.com/your-username/your-repo/main/your-dataset.csv"
+DATASET_URL = "https://github.com/demokritfromabyss/DS/blob/main/streamlit_app/contract_new_streamlit.csv"
 
 # Function to load data from GitHub
 @st.cache_data
