@@ -90,6 +90,12 @@ def main():
     if st.button("Delete Selected Columns"):
         data.drop(columns=columns_to_delete, inplace=True)
         st.session_state.processed_data = data.copy(deep=True)
+        st.experimental_rerun()
+        st.success("Selected columns deleted.")
+        st.experimental_rerun()
+        return
+        data.drop(columns=columns_to_delete, inplace=True)
+        st.session_state.processed_data = data.copy(deep=True)
         st.rerun()
         st.success("Selected columns deleted.")
         display_dataset_info(data)
