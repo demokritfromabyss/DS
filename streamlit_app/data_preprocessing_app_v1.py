@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from phik import phik_matrix
 from sklearn.preprocessing import LabelEncoder
+import io
+from fpdf import FPDF
 
 # URL to dataset on GitHub
 DATASET_URL = "https://raw.githubusercontent.com/demokritfromabyss/DS/refs/heads/main/streamlit_app/contract_new_streamlit.csv"
@@ -14,7 +16,7 @@ def load_data(url):
     """Load dataset from GitHub and convert column names to lowercase."""
     try:
         data = pd.read_csv(url)
-        data.columns = data.columns.str.lower()  # Convert column names to lowercase
+        data.columns = data.columns.str.lower()
         return data.copy()
     except Exception as e:
         st.error(f"Error loading dataset: {e}")
@@ -25,19 +27,38 @@ def display_dataset_info(data):
     st.subheader("Dataset Overview")
     st.write("**First 10 Rows:**")
     st.write(data.head(10))
-    st.write("**Dataset Info:**")
-    import io
     buffer = io.StringIO()
     data.info(buf=buffer)
     st.text(buffer.getvalue())
     st.write("**Descriptive Statistics:**")
     st.write(data.describe(include='all', percentiles=[0.01, 0.25, 0.5, 0.75, 0.99]))
-    
     st.write("**Missing Values:**")
     st.write(data.isnull().sum())
-    
     st.write("**Duplicate Rows:**")
     st.write(data.duplicated().sum())
+
+def reset_app():
+    """Reset all changes and reload original dataset."""
+    st.session_state.processed_data = load_data(DATASET_URL)
+    st.experimental_rerun()
+
+def download_report(data):
+    """Generate and download a PDF report."""
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", style="B", size=16)
+    pdf.cell(200, 10, "Dataset Report", ln=True, align='C')
+    pdf.ln(10)
+    
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, "General Information", ln=True)
+    pdf.set_font("Arial", size=10)
+    pdf.multi_cell(0, 10, data.describe(include='all').to_string())
+    
+    pdf_output = "dataset_report.pdf"
+    pdf.output(pdf_output)
+    st.download_button(label="Download Report", data=open(pdf_output, "rb").read(), file_name="dataset_report.pdf", mime="application/pdf")
 
 def main():
     """Main function to run Streamlit app."""
@@ -58,53 +79,17 @@ def main():
             st.session_state.processed_data = load_data(DATASET_URL)
             st.rerun()
         return
-
+    
+    st.sidebar.button("🔄 Reset", on_click=reset_app)
+    
     data = st.session_state.processed_data.copy()
-
     if data is not None:
-        # Slider for selecting number of rows to process
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
         data = data.iloc[:row_count]
-
         display_dataset_info(data)
+        st.button("Download Report", on_click=download_report, args=(data,))
 
-        # Column deletion
-        st.subheader("Column Deletion 🗑️")
-        columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
-        if st.button("Delete Selected Columns"):
-            data.drop(columns=columns_to_delete, inplace=True)
-            st.session_state.processed_data = data.copy(deep=True)
-            st.success("Selected columns deleted.")
-            display_dataset_info(data)
-
-        # Data type conversion
-        st.subheader("Change Data Types 🔄")
-        selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
-        target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
-
-        if st.button("Convert Data Type"):
-            for col in selected_columns:
-                if target_type == "int":
-                    data[col] = pd.to_numeric(data[col], errors='coerce').astype('Int64')
-                elif target_type == "float":
-                    data[col] = pd.to_numeric(data[col], errors='coerce')
-                elif target_type == "object":
-                    data[col] = data[col].astype(str)
-                elif target_type == "datetime":
-                    data[col] = pd.to_datetime(data[col], errors='coerce').dt.date
-                elif target_type == "category":
-                    data[col] = data[col].astype('category')
-                elif target_type == "bool":
-                    data[col] = data[col].astype(bool)
-                elif target_type == "string":
-                    data[col] = data[col].astype(str)
-            st.session_state.processed_data = data.copy(deep=True)
-            st.success("Data types successfully converted.")
-            display_dataset_info(data)
-
-        # Visualization
         st.subheader("Data Visualization 📊")
-
         if st.button("Generate Histograms for All Features"):
             st.subheader("Feature Histograms")
             numeric_columns = data.select_dtypes(include=[np.number]).columns
@@ -112,6 +97,8 @@ def main():
                 fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
                 if len(numeric_columns) == 1:
                     axes = [axes]
+                elif len(numeric_columns) > 1:
+                    axes = axes.flatten()
                 for ax, column in zip(axes, numeric_columns):
                     data[column].hist(bins=20, ax=ax)
                     ax.set_title(f"Histogram: {column}")
@@ -121,7 +108,6 @@ def main():
             else:
                 st.warning("No numeric columns available for histograms.")
 
-        # Correlation matrix
         if st.button("Show Correlation Matrix 🔗"):
             st.subheader("Correlation Matrix")
             try:
