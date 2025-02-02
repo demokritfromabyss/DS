@@ -42,23 +42,7 @@ def reset_app():
     st.session_state.processed_data = load_data(DATASET_URL)
     st.experimental_rerun()
 
-def download_report(data):
-    """Generate and download a PDF report."""
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.set_font("Arial", style="B", size=16)
-    pdf.cell(200, 10, "Dataset Report", ln=True, align='C')
-    pdf.ln(10)
-    
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, "General Information", ln=True)
-    pdf.set_font("Arial", size=10)
-    pdf.multi_cell(0, 10, data.describe(include='all').to_string())
-    
-    pdf_output = "dataset_report.pdf"
-    pdf.output(pdf_output)
-    st.download_button(label="Download Report", data=open(pdf_output, "rb").read(), file_name="dataset_report.pdf", mime="application/pdf")
+.read(), file_name="dataset_report.pdf", mime="application/pdf")
 
 def main():
     """Main function to run Streamlit app."""
@@ -87,37 +71,43 @@ def main():
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
         data = data.iloc[:row_count]
         display_dataset_info(data)
-        st.button("Download Report", on_click=download_report, args=(data,))
+        
 
         st.subheader("Data Visualization 📊")
         if st.button("Generate Histograms for All Features"):
-            st.subheader("Feature Histograms")
-            numeric_columns = data.select_dtypes(include=[np.number]).columns
-            if len(numeric_columns) > 0:
-                fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
-                if len(numeric_columns) == 1:
-                    axes = [axes]
-                elif len(numeric_columns) > 1:
-                    axes = axes.flatten()
-                for ax, column in zip(axes, numeric_columns):
-                    data[column].hist(bins=20, ax=ax)
-                    ax.set_title(f"Histogram: {column}")
-                    ax.set_xlabel(column)
-                    ax.set_ylabel("Frequency")
-                st.pyplot(fig)
-            else:
-                st.warning("No numeric columns available for histograms.")
+    st.session_state.show_histograms = True
+
+if "show_histograms" in st.session_state and st.session_state.show_histograms:
+    st.subheader("Feature Histograms")
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    if len(numeric_columns) > 0:
+        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+        if len(numeric_columns) == 1:
+            axes = [axes]
+        elif len(numeric_columns) > 1:
+            axes = axes.flatten()
+        for ax, column in zip(axes, numeric_columns):
+            data[column].hist(bins=20, ax=ax)
+            ax.set_title(f"Histogram: {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histograms.")
 
         if st.button("Show Correlation Matrix 🔗"):
-            st.subheader("Correlation Matrix")
-            try:
-                corr_matrix = data.phik_matrix()
-                fig, ax = plt.subplots(figsize=(10, 8))
-                sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-                ax.set_title("PhiK Correlation Matrix")
-                st.pyplot(fig)
-            except Exception as e:
-                st.error(f"Error generating correlation matrix: {e}")
+    st.session_state.show_correlation_matrix = True
+
+if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
+    st.subheader("Correlation Matrix")
+    try:
+        corr_matrix = data.phik_matrix()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
+        ax.set_title("PhiK Correlation Matrix")
+        st.pyplot(fig)
+    except Exception as e:
+        st.error(f"Error generating correlation matrix: {e}")
 
 if __name__ == "__main__":
     main()
