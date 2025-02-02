@@ -13,7 +13,7 @@ DATASET_URL = "https://github.com/demokritfromabyss/DS/blob/main/streamlit_app/c
 def load_data(url):
     """Load dataset from GitHub and handle errors."""
     try:
-        data = pd.read_csv(url)
+        data = pd.read_csv(url, sep=",")
         return data
     except Exception as e:
         st.error(f"Error loading dataset: {e}")
