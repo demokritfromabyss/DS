@@ -81,21 +81,18 @@ def main():
     columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
     if st.button("Delete Selected Columns") and columns_to_delete:
         data.drop(columns=columns_to_delete, inplace=True)
-        
-        st.success("Selected columns deleted.")
-        display_dataset_info(data)
-        if columns_to_delete:
-        data.drop(columns=columns_to_delete, inplace=True)
         st.session_state.processed_data = data.copy(deep=True)
         st.success("Selected columns deleted.")
         display_dataset_info(data)
+        data.drop(columns=columns_to_delete, inplace=True)
+        
+        st.success("Selected columns deleted.")
+        display_dataset_info(data)
+        
         st.session_state.processed_data = data.copy(deep=True)
         st.success("Selected columns deleted.")
         
-        data.drop(columns=columns_to_delete, inplace=True)
-    st.session_state.processed_data = data.copy(deep=True)
-    st.success("Selected columns deleted.")
-    display_dataset_info(data)
+        
     
     st.subheader("Change Data Types 🔄")
     selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
