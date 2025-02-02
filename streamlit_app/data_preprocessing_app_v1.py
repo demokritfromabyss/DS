@@ -58,7 +58,7 @@ def main():
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
     if data is not None and not data.empty:
-        max_rows = max(len(data), 10)
+        max_rows = min(len(data), 10000) if len(data) > 10 else 10
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
         data = data.iloc[:row_count]
     else:
@@ -103,7 +103,7 @@ def main():
     
     # Step 5: Histograms
     st.subheader("Data Visualization 📊")
-    selected_hist_columns = st.multiselect("Select columns for histograms", options=data.select_dtypes(include=[np.number]).columns.tolist())
+    selected_hist_columns = st.multiselect("Select columns for histograms", options=st.session_state.processed_data.select_dtypes(include=[np.number]).columns.tolist())
     if st.button("Generate Histograms") and selected_hist_columns:
         st.subheader("Feature Histograms")
         fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
