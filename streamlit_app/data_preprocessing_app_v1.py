@@ -26,9 +26,10 @@ def display_dataset_info(data):
     st.write("**First 10 Rows:**")
     st.write(data.head(10))
     st.write("**Dataset Info:**")
-    buffer = []
-    data.info(buf=buffer.append)
-    st.text("\n".join(buffer))
+    import io
+    buffer = io.StringIO()
+    data.info(buf=buffer)
+    st.text(buffer.getvalue())
     st.write("**Descriptive Statistics:**")
     st.write(data.describe(include='all', percentiles=[0.01, 0.25, 0.5, 0.75, 0.99]))
     
