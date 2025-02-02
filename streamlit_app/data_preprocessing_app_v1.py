@@ -84,7 +84,6 @@ def main():
     st.session_state.processed_data = data.copy(deep=True)
     st.success("Selected columns deleted.")
     display_dataset_info(data)
-        display_dataset_info(data)
     
     st.subheader("Change Data Types 🔄")
     selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
