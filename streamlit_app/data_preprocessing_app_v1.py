@@ -65,86 +65,107 @@ def main():
     
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
-    if data is not None and not data.empty:
-        row_count = st.slider("Select number of rows to process", min_value=10, max_value=min(len(data), 10000), value=10)
+    if data is not None:
+        if data is not None and not data.empty:
+            if data is not None and not data.empty:
+        max_rows = len(data) if len(data) >= 10 else 10
+        row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
         data = data.iloc[:row_count]
     else:
         st.warning("Dataset is empty or not loaded properly.")
         return
-    
-    # Step 3: Display dataset info
-    display_dataset_info(data)
-    
-    # Step 4: Column deletion and data type correction
-    st.subheader("Column Management 🛠️")
-    columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
-    if st.button("Delete Selected Columns"):
-        data.drop(columns=columns_to_delete, inplace=True)
-        st.session_state.processed_data = data.copy(deep=True)
-        st.success("Selected columns deleted.")
-        display_dataset_info(data)
-    
-    st.subheader("Change Data Types 🔄")
-    selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
-    target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
-
-    if st.button("Convert Data Type"):
-        for col in selected_columns:
-            if target_type == "int":
-                data[col] = pd.to_numeric(data[col], errors='coerce').astype('Int64')
-            elif target_type == "float":
-                data[col] = pd.to_numeric(data[col], errors='coerce')
-            elif target_type == "object":
-                data[col] = data[col].astype(str)
-            elif target_type == "datetime":
-                data[col] = pd.to_datetime(data[col], errors='coerce').dt.date
-            elif target_type == "category":
-                data[col] = data[col].astype('category')
-            elif target_type == "bool":
-                data[col] = data[col].astype(bool)
-            elif target_type == "string":
-                data[col] = data[col].astype(str)
-        st.session_state.processed_data = data.copy(deep=True)
-        st.success("Data types successfully converted.")
-        display_dataset_info(data)
-    
-    # Step 5: Histograms
-    st.subheader("Data Visualization 📊")
-    if st.button("Generate Histograms for All Features"):
-        st.session_state.show_histograms = True
-
-    if "show_histograms" in st.session_state and st.session_state.show_histograms:
-        st.subheader("Feature Histograms")
-        numeric_columns = data.select_dtypes(include=[np.number]).columns
-        if len(numeric_columns) > 0:
-            fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
-            if len(numeric_columns) == 1:
-                axes = [axes]
-            elif len(numeric_columns) > 1:
-                axes = axes.flatten()
-            for ax, column in zip(axes, numeric_columns):
-                data[column].hist(bins=20, ax=ax)
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-            st.pyplot(fig)
+            data = data.iloc[:row_count]
         else:
-            st.warning("No numeric columns available for histograms.")
+            st.warning("Dataset is empty or not loaded properly.")
+        data = data.iloc[:row_count]
+        
+        # Step 3: Display dataset info
+        display_dataset_info(data)
+        
+        # Step 4: Column deletion and data type correction
+        st.subheader("Column Management 🛠️")
+        columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
+        if st.button("Delete Selected Columns"):
+            data.drop(columns=columns_to_delete, inplace=True)
+            st.session_state.processed_data = data.copy(deep=True)
+            st.success("Selected columns deleted.")
+            display_dataset_info(data)
+        
+        st.subheader("Change Data Types 🔄")
+        selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
+        target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
 
-    # Step 6: Correlation matrix
-    if st.button("Show Correlation Matrix 🔗"):
-        st.session_state.show_correlation_matrix = True
+        if st.button("Convert Data Type"):
+            for col in selected_columns:
+                if target_type == "int":
+                    data[col] = pd.to_numeric(data[col], errors='coerce').astype('Int64')
+                elif target_type == "float":
+                    data[col] = pd.to_numeric(data[col], errors='coerce')
+                elif target_type == "object":
+                    data[col] = data[col].astype(str)
+                elif target_type == "datetime":
+                    data[col] = pd.to_datetime(data[col], errors='coerce').dt.date
+                elif target_type == "category":
+                    data[col] = data[col].astype('category')
+                elif target_type == "bool":
+                    data[col] = data[col].astype(bool)
+                elif target_type == "string":
+                    data[col] = data[col].astype(str)
+            st.session_state.processed_data = data.copy(deep=True)
+            st.success("Data types successfully converted.")
+            display_dataset_info(data)
+        
+        # Step 5: Histograms
+        st.subheader("Data Visualization 📊")
+        if st.button("Generate Histograms for All Features"):
+            st.session_state.show_histograms = True
 
-    if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
-        st.subheader("Correlation Matrix")
-        try:
-            corr_matrix = data.phik_matrix()
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-            ax.set_title("PhiK Correlation Matrix")
-            st.pyplot(fig)
-        except Exception as e:
-            st.error(f"Error generating correlation matrix: {e}")
+        if "show_histograms" in st.session_state and st.session_state.show_histograms:
+    st.subheader("Feature Histograms")
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    if len(numeric_columns) > 0:
+        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+        if len(numeric_columns) == 1:
+            axes = [axes]
+        for ax, column in zip(axes, numeric_columns):
+            ax.hist(data[column].dropna(), bins=20, edgecolor='black')
+            ax.set_title(f"Histogram: {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histograms.")
+            st.subheader("Feature Histograms")
+            numeric_columns = data.select_dtypes(include=[np.number]).columns
+            if len(numeric_columns) > 0:
+                fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+                if len(numeric_columns) == 1:
+                    axes = [axes]
+                elif len(numeric_columns) > 1:
+                    axes = axes.flatten()
+                for ax, column in zip(axes, numeric_columns):
+                    data[column].hist(bins=20, ax=ax)
+                    ax.set_title(f"Histogram: {column}")
+                    ax.set_xlabel(column)
+                    ax.set_ylabel("Frequency")
+                st.pyplot(fig)
+            else:
+                st.warning("No numeric columns available for histograms.")
+
+        # Step 6: Correlation matrix
+        if st.button("Show Correlation Matrix 🔗"):
+            st.session_state.show_correlation_matrix = True
+
+        if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
+            st.subheader("Correlation Matrix")
+            try:
+                corr_matrix = data.phik_matrix()
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
+                ax.set_title("PhiK Correlation Matrix")
+                st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Error generating correlation matrix: {e}")
 
 if __name__ == "__main__":
     main()
