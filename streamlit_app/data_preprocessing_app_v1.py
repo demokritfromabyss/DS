@@ -36,11 +36,6 @@ def display_dataset_info(data):
     st.write("**Duplicate Rows:**")
     st.write(data.duplicated().sum())
 
-
-    """Reset all changes and reload original dataset."""
-    st.session_state.processed_data = load_data(DATASET_URL)
-    
-
 def main():
     """Main function to run Streamlit app."""
     st.title("Automated Data Preprocessing and EDA App 🚀")
@@ -58,10 +53,7 @@ def main():
         if st.button("Start Application"):
             st.session_state.app_started = True
             st.session_state.processed_data = load_data(DATASET_URL)
-            
         return
-    
-    
     
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
@@ -84,13 +76,11 @@ def main():
         st.session_state.processed_data = data.copy(deep=True)
         st.success("Selected columns deleted.")
         display_dataset_info(data)
-        
-        
     
     st.subheader("Change Data Types 🔄")
     selected_columns = st.multiselect("Select columns to convert", options=st.session_state.processed_data.columns.tolist())
     target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
-
+    
     if st.button("Convert Data Type"):
         for col in selected_columns:
             if target_type == "int":
@@ -114,38 +104,22 @@ def main():
     # Step 5: Histograms
     st.subheader("Data Visualization 📊")
     selected_hist_columns = st.multiselect("Select columns for histograms", options=data.select_dtypes(include=[np.number]).columns.tolist())
-    if st.button("Generate Histograms"):
-        st.session_state.show_histograms = True
-
-    if "show_histograms" in st.session_state and st.session_state.show_histograms and selected_hist_columns:
+    if st.button("Generate Histograms") and selected_hist_columns:
         st.subheader("Feature Histograms")
-        
-        if len(selected_hist_columns) > 0:
-            fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
-            if len(selected_hist_columns) == 1:
-                axes = [axes]
-            for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
-                ax.hist(data[column].dropna(), bins=20, edgecolor='black')
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-            ax.set_xlabel(column)
-            
+        fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
+        if len(selected_hist_columns) == 1:
+            axes = [axes]
+        for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
+            ax.hist(data[column].dropna(), bins=20, edgecolor='black')
             ax.set_title(f"Histogram: {column}")
             ax.set_xlabel(column)
             ax.set_ylabel("Frequency")
-                ax.hist(data[column].dropna(), bins=20, edgecolor='black')
-                
-                
-                ax.set_ylabel("Frequency")
-            st.pyplot(fig)
-        else:
-            st.warning("No numeric columns available for histograms.")
-
+        st.pyplot(fig)
+    
     # Step 6: Correlation matrix
     if st.button("Show Correlation Matrix 🔗"):
         st.session_state.show_correlation_matrix = True
-
+    
     if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
         st.subheader("Correlation Matrix")
         try:
