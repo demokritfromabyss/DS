@@ -58,13 +58,9 @@ def main():
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
     if data is not None and not data.empty:
-        max_rows = min(len(data), 10000) if len(data) >= 10 else 10
+        max_rows = max(len(data), 10)
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
         data = data.iloc[:row_count]
-        max_rows = max(10, min(len(data), 10000))
-        row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
-    
-    
     else:
         st.warning("Dataset is empty or not loaded properly.")
         return
@@ -107,9 +103,8 @@ def main():
     
     # Step 5: Histograms
     st.subheader("Data Visualization 📊")
-    selected_hist_columns = st.multiselect("Select columns for histograms", options=st.session_state.processed_data.select_dtypes(include=[np.number]).columns.tolist())
+    selected_hist_columns = st.multiselect("Select columns for histograms", options=data.select_dtypes(include=[np.number]).columns.tolist())
     if st.button("Generate Histograms") and selected_hist_columns:
-        st.session_state.show_histograms = True
         st.subheader("Feature Histograms")
         fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
         if len(selected_hist_columns) == 1:
@@ -125,28 +120,6 @@ def main():
     if st.button("Show Correlation Matrix 🔗"):
         st.session_state.show_correlation_matrix = True
     
-    if "show_histograms" in st.session_state and st.session_state.show_histograms and selected_hist_columns:
-        st.subheader("Feature Histograms")
-        fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
-        if len(selected_hist_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
-            ax.hist(st.session_state.processed_data[column].dropna(), bins=20, edgecolor='black')
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-        st.subheader("Feature Histograms")
-        fig, axes = plt.subplots(nrows=len(selected_hist_columns), figsize=(8, 5 * len(selected_hist_columns)))
-        if len(selected_hist_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(np.atleast_1d(axes), selected_hist_columns):
-            ax.hist(data[column].dropna(), bins=20, edgecolor='black')
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-
     if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
         st.subheader("Correlation Matrix")
         try:
