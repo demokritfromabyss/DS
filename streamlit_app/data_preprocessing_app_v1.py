@@ -65,6 +65,39 @@ def main():
     
     data = st.session_state.processed_data.copy()
     if data is not None:
+        # Column deletion
+        st.subheader("Column Deletion 🗑️")
+        columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
+        if st.button("Delete Selected Columns"):
+            data.drop(columns=columns_to_delete, inplace=True)
+            st.session_state.processed_data = data.copy(deep=True)
+            st.success("Selected columns deleted.")
+            display_dataset_info(data)
+
+        # Data type conversion
+        st.subheader("Change Data Types 🔄")
+        selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
+        target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
+
+        if st.button("Convert Data Type"):
+            for col in selected_columns:
+                if target_type == "int":
+                    data[col] = pd.to_numeric(data[col], errors='coerce').astype('Int64')
+                elif target_type == "float":
+                    data[col] = pd.to_numeric(data[col], errors='coerce')
+                elif target_type == "object":
+                    data[col] = data[col].astype(str)
+                elif target_type == "datetime":
+                    data[col] = pd.to_datetime(data[col], errors='coerce').dt.date
+                elif target_type == "category":
+                    data[col] = data[col].astype('category')
+                elif target_type == "bool":
+                    data[col] = data[col].astype(bool)
+                elif target_type == "string":
+                    data[col] = data[col].astype(str)
+            st.session_state.processed_data = data.copy(deep=True)
+            st.success("Data types successfully converted.")
+            display_dataset_info(data)
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
         data = data.iloc[:row_count]
         display_dataset_info(data)
