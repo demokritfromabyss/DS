@@ -58,7 +58,7 @@ def main():
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
     if data is not None and not data.empty:
-        max_rows = min(len(data), 10000) if len(data) > 10 else 10
+        max_rows = max(10, min(len(data), 10000))
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
         data = data.iloc[:row_count]
     else:
