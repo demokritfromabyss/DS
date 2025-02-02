@@ -36,17 +36,10 @@ def display_dataset_info(data):
     st.write("**Duplicate Rows:**")
     st.write(data.duplicated().sum())
 
-def reset_app():
-    if "processed_data" in st.session_state:
-        del st.session_state.processed_data
-    if "show_histograms" in st.session_state:
-        del st.session_state.show_histograms
-    if "show_correlation_matrix" in st.session_state:
-        del st.session_state.show_correlation_matrix
-    st.session_state.processed_data = load_data(DATASET_URL)
+
     """Reset all changes and reload original dataset."""
     st.session_state.processed_data = load_data(DATASET_URL)
-    st.experimental_rerun()
+    
 
 def main():
     """Main function to run Streamlit app."""
@@ -68,7 +61,7 @@ def main():
             st.experimental_rerun()
         return
     
-    st.sidebar.button("🔄 Reset", on_click=reset_app)
+    
     
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
@@ -93,7 +86,7 @@ def main():
         st.success("Selected columns deleted.")
         data.drop(columns=columns_to_delete, inplace=True)
         st.session_state.processed_data = data.copy(deep=True)
-        st.rerun()
+        st.experimental_rerunerun()
         st.success("Selected columns deleted.")
         display_dataset_info(data)
     
