@@ -6,7 +6,6 @@ import seaborn as sns
 from phik import phik_matrix
 from sklearn.preprocessing import LabelEncoder
 import io
-from fpdf import FPDF
 
 # URL to dataset on GitHub
 DATASET_URL = "https://raw.githubusercontent.com/demokritfromabyss/DS/refs/heads/main/streamlit_app/contract_new_streamlit.csv"
@@ -42,7 +41,6 @@ def reset_app():
     st.session_state.processed_data = load_data(DATASET_URL)
     st.experimental_rerun()
 
-.read(), file_name="dataset_report.pdf", mime="application/pdf")
 
 def main():
     """Main function to run Streamlit app."""
