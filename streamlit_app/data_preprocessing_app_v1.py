@@ -63,18 +63,24 @@ def main():
     
     st.sidebar.button("🔄 Reset", on_click=reset_app)
     
+    # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
     if data is not None:
-        # Column deletion
-        st.subheader("Column Deletion 🗑️")
+        row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
+        data = data.iloc[:row_count]
+        
+        # Step 3: Display dataset info
+        display_dataset_info(data)
+        
+        # Step 4: Column deletion and data type correction
+        st.subheader("Column Management 🛠️")
         columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
         if st.button("Delete Selected Columns"):
             data.drop(columns=columns_to_delete, inplace=True)
             st.session_state.processed_data = data.copy(deep=True)
             st.success("Selected columns deleted.")
             display_dataset_info(data)
-
-        # Data type conversion
+        
         st.subheader("Change Data Types 🔄")
         selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
         target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
@@ -98,10 +104,8 @@ def main():
             st.session_state.processed_data = data.copy(deep=True)
             st.success("Data types successfully converted.")
             display_dataset_info(data)
-        row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
-        data = data.iloc[:row_count]
-        display_dataset_info(data)
         
+        # Step 5: Histograms
         st.subheader("Data Visualization 📊")
         if st.button("Generate Histograms for All Features"):
             st.session_state.show_histograms = True
@@ -124,6 +128,7 @@ def main():
             else:
                 st.warning("No numeric columns available for histograms.")
 
+        # Step 6: Correlation matrix
         if st.button("Show Correlation Matrix 🔗"):
             st.session_state.show_correlation_matrix = True
 
