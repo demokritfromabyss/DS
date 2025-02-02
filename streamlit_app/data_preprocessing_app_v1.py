@@ -30,7 +30,7 @@ def display_dataset_info(data):
     data.info(buf=buffer.append)
     st.text("\n".join(buffer))
     st.write("**Descriptive Statistics:**")
-    st.write(data.describe(include='all'))
+    st.write(data.describe(include='all', percentiles=[0.01, 0.25, 0.5, 0.75, 0.99]))
     
     st.write("**Missing Values:**")
     st.write(data.isnull().sum())
@@ -58,7 +58,7 @@ def main():
             st.rerun()
         return
 
-    data = st.session_state.processed_data
+    data = st.session_state.processed_data.copy()
 
     if data is not None:
         # Slider for selecting number of rows to process
@@ -69,7 +69,7 @@ def main():
 
         # Column deletion
         st.subheader("Column Deletion 🗑️")
-        columns_to_delete = st.multiselect("Select columns to delete", data.columns)
+        columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
         if st.button("Delete Selected Columns"):
             data.drop(columns=columns_to_delete, inplace=True)
             st.session_state.processed_data = data.copy()
@@ -78,7 +78,7 @@ def main():
 
         # Data type conversion
         st.subheader("Change Data Types 🔄")
-        selected_columns = st.multiselect("Select columns to convert", data.columns)
+        selected_columns = st.multiselect("Select columns to convert", options=data.columns.tolist())
         target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
 
         if st.button("Convert Data Type"):
@@ -90,7 +90,7 @@ def main():
                 elif target_type == "object":
                     data[col] = data[col].astype(str)
                 elif target_type == "datetime":
-                    data[col] = pd.to_datetime(data[col], errors='coerce')
+                    data[col] = pd.to_datetime(data[col], errors='coerce').dt.date
                 elif target_type == "category":
                     data[col] = data[col].astype('category')
                 elif target_type == "bool":
@@ -105,6 +105,17 @@ def main():
         st.subheader("Data Visualization 📊")
 
         if st.button("Generate Histograms for All Features"):
+    st.subheader("Feature Histograms")
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
+    if len(numeric_columns) == 1:
+        axes = [axes]
+    for ax, column in zip(axes, numeric_columns):
+        data[column].hist(bins=20, ax=ax)
+        ax.set_title(f"Histogram: {column}")
+        ax.set_xlabel(column)
+        ax.set_ylabel("Frequency")
+    st.pyplot(fig)
             st.subheader("Feature Histograms")
             numeric_columns = data.select_dtypes(include=[np.number]).columns
             for column in numeric_columns:
