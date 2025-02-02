@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+import seab as sns
 from phik import phik_matrix
 from sklearn.preprocessing import LabelEncoder
 
-# URL to dataset on GitHub (replace with your actual link)
+# URL to dataset on GitHub
 DATASET_URL = "https://raw.githubusercontent.com/demokritfromabyss/DS/refs/heads/main/streamlit_app/contract_new_streamlit.csv"
 
 @st.cache_data
@@ -15,20 +15,22 @@ def load_data(url):
     try:
         data = pd.read_csv(url)
         data.columns = data.columns.str.lower()  # Convert column names to lowercase
-        return data
+        return data.copy()
     except Exception as e:
         st.error(f"Error loading dataset: {e}")
         return None
 
 def display_dataset_info(data):
-    """Display general dataset information."""
+    """Display general dataset information for all columns."""
     st.subheader("Dataset Overview")
     st.write("**First 10 Rows:**")
     st.write(data.head(10))
     st.write("**Dataset Info:**")
-    st.text(data.info())
+    buffer = []
+    data.info(buf=buffer.append)
+    st.text("\n".join(buffer))
     st.write("**Descriptive Statistics:**")
-    st.write(data.describe())
+    st.write(data.describe(include='all'))
     
     st.write("**Missing Values:**")
     st.write(data.isnull().sum())
@@ -46,20 +48,22 @@ def main():
 
     if "app_started" not in st.session_state:
         st.session_state.app_started = False
+    if "processed_data" not in st.session_state:
+        st.session_state.processed_data = None
 
     if not st.session_state.app_started:
         if st.button("Start Application"):
             st.session_state.app_started = True
+            st.session_state.processed_data = load_data(DATASET_URL)
             st.rerun()
         return
 
-    # Load dataset
-    data = load_data(DATASET_URL)
+    data = st.session_state.processed_data
 
     if data is not None:
         # Slider for selecting number of rows to process
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
-        data = data.iloc[:row_count]  # Process only selected number of rows
+        data = data.iloc[:row_count]
 
         display_dataset_info(data)
 
@@ -68,6 +72,7 @@ def main():
         columns_to_delete = st.multiselect("Select columns to delete", data.columns)
         if st.button("Delete Selected Columns"):
             data.drop(columns=columns_to_delete, inplace=True)
+            st.session_state.processed_data = data.copy()
             st.success("Selected columns deleted.")
             display_dataset_info(data)
 
@@ -92,6 +97,7 @@ def main():
                     data[col] = data[col].astype(bool)
                 elif target_type == "string":
                     data[col] = data[col].astype(str)
+            st.session_state.processed_data = data.copy()
             st.success("Data types successfully converted.")
             display_dataset_info(data)
 
@@ -109,36 +115,17 @@ def main():
                 ax.set_ylabel("Frequency")
                 st.pyplot(fig)
 
-        st.subheader("Custom Graphs")
-        selected_features = st.multiselect("Select features for visualization", data.columns)
-        plot_type = st.selectbox("Select chart type", ["Histogram", "Boxplot", "Scatter"])
-        color = st.color_picker("Choose chart color")
-        grid = st.checkbox("Show grid")
-
-        if plot_type == "Scatter":
-            alpha = st.slider("Select point transparency", 0.0, 1.0, 0.5)
-
-        if st.button("Generate Selected Chart"):
-            fig, ax = plt.subplots()
-            if plot_type == "Histogram":
-                data[selected_features].hist(bins=20, ax=ax, color=color)
-            elif plot_type == "Boxplot":
-                sns.boxplot(data=data[selected_features], ax=ax, palette=[color])
-            elif plot_type == "Scatter" and len(selected_features) == 2:
-                data.plot.scatter(x=selected_features[0], y=selected_features[1], ax=ax, color=color, alpha=alpha)
-            ax.set_title(f"{plot_type} Plot")
-            if grid:
-                ax.grid(True)
-            st.pyplot(fig)
-
         # Correlation matrix
         if st.button("Show Correlation Matrix 🔗"):
             st.subheader("Correlation Matrix")
-            corr_matrix = data.phik_matrix(interval_cols=data.select_dtypes(include=[np.number]).columns)
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-            ax.set_title("PhiK Correlation Matrix")
-            st.pyplot(fig)
+            try:
+                corr_matrix = data.phik_matrix(interval_cols=data.select_dtypes(include=[np.number]).columns)
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
+                ax.set_title("PhiK Correlation Matrix")
+                st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Error generating correlation matrix: {e}")
 
 if __name__ == "__main__":
     main()
