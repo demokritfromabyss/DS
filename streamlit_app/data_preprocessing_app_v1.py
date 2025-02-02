@@ -41,7 +41,6 @@ def reset_app():
     st.session_state.processed_data = load_data(DATASET_URL)
     st.experimental_rerun()
 
-
 def main():
     """Main function to run Streamlit app."""
     st.title("Automated Data Preprocessing and EDA App 🚀")
@@ -70,42 +69,41 @@ def main():
         data = data.iloc[:row_count]
         display_dataset_info(data)
         
-
         st.subheader("Data Visualization 📊")
         if st.button("Generate Histograms for All Features"):
-    st.session_state.show_histograms = True
+            st.session_state.show_histograms = True
 
-if "show_histograms" in st.session_state and st.session_state.show_histograms:
-    st.subheader("Feature Histograms")
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        elif len(numeric_columns) > 1:
-            axes = axes.flatten()
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
+        if "show_histograms" in st.session_state and st.session_state.show_histograms:
+            st.subheader("Feature Histograms")
+            numeric_columns = data.select_dtypes(include=[np.number]).columns
+            if len(numeric_columns) > 0:
+                fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+                if len(numeric_columns) == 1:
+                    axes = [axes]
+                elif len(numeric_columns) > 1:
+                    axes = axes.flatten()
+                for ax, column in zip(axes, numeric_columns):
+                    data[column].hist(bins=20, ax=ax)
+                    ax.set_title(f"Histogram: {column}")
+                    ax.set_xlabel(column)
+                    ax.set_ylabel("Frequency")
+                st.pyplot(fig)
+            else:
+                st.warning("No numeric columns available for histograms.")
 
         if st.button("Show Correlation Matrix 🔗"):
-    st.session_state.show_correlation_matrix = True
+            st.session_state.show_correlation_matrix = True
 
-if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
-    st.subheader("Correlation Matrix")
-    try:
-        corr_matrix = data.phik_matrix()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
-        ax.set_title("PhiK Correlation Matrix")
-        st.pyplot(fig)
-    except Exception as e:
-        st.error(f"Error generating correlation matrix: {e}")
+        if "show_correlation_matrix" in st.session_state and st.session_state.show_correlation_matrix:
+            st.subheader("Correlation Matrix")
+            try:
+                corr_matrix = data.phik_matrix()
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", ax=ax)
+                ax.set_title("PhiK Correlation Matrix")
+                st.pyplot(fig)
+            except Exception as e:
+                st.error(f"Error generating correlation matrix: {e}")
 
 if __name__ == "__main__":
     main()
