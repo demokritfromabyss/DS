@@ -105,7 +105,21 @@ def main():
         st.subheader("Data Visualization 📊")
 
         if st.button("Generate Histograms for All Features"):
-            st.subheader("Feature Histograms")
+    st.subheader("Feature Histograms")
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    if len(numeric_columns) > 0:
+        fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
+        if len(numeric_columns) == 1:
+            axes = [axes]
+        for ax, column in zip(axes, numeric_columns):
+            data[column].hist(bins=20, ax=ax)
+            ax.set_title(f"Histogram: {column}")
+            ax.set_xlabel(column)
+            ax.set_ylabel("Frequency")
+        st.pyplot(fig)
+    else:
+        st.warning("No numeric columns available for histograms.")
+            
             numeric_columns = data.select_dtypes(include=[np.number]).columns
             fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
             if len(numeric_columns) == 1:
@@ -116,7 +130,7 @@ def main():
                 ax.set_xlabel(column)
                 ax.set_ylabel("Frequency")
             st.pyplot(fig)
-        st.subheader("Feature Histograms")
+        
         numeric_columns = data.select_dtypes(include=[np.number]).columns
         fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
         if len(numeric_columns) == 1:
@@ -127,7 +141,7 @@ def main():
             ax.set_xlabel(column)
             ax.set_ylabel("Frequency")
         st.pyplot(fig)
-    st.subheader("Feature Histograms")
+    
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
     if len(numeric_columns) == 1:
@@ -138,7 +152,7 @@ def main():
         ax.set_xlabel(column)
         ax.set_ylabel("Frequency")
     st.pyplot(fig)
-            st.subheader("Feature Histograms")
+            
             numeric_columns = data.select_dtypes(include=[np.number]).columns
             for column in numeric_columns:
                 fig, ax = plt.subplots()
