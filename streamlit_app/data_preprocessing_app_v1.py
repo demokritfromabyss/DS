@@ -65,8 +65,7 @@ def main():
     
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
-    if data is not None:
-        if data is not None and not data.empty:
+    
             if data is not None and not data.empty:
         max_rows = len(data) if len(data) >= 10 else 10
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=max_rows, value=min(10, max_rows))
@@ -122,13 +121,15 @@ def main():
 
         if "show_histograms" in st.session_state and st.session_state.show_histograms:
     st.subheader("Feature Histograms")
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
+        numeric_columns = data.select_dtypes(include=[np.number]).columns
     if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+            fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+            if len(numeric_columns) == 1:
+                axes = [axes]
         if len(numeric_columns) == 1:
             axes = [axes]
         for ax, column in zip(axes, numeric_columns):
-            ax.hist(data[column].dropna(), bins=20, edgecolor='black')
+                ax.hist(data[column].dropna(), bins=20, edgecolor='black')
             ax.set_title(f"Histogram: {column}")
             ax.set_xlabel(column)
             ax.set_ylabel("Frequency")
