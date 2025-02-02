@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seab as sns
+import seaborn as sns
 from phik import phik_matrix
 from sklearn.preprocessing import LabelEncoder
 
@@ -97,7 +97,7 @@ def main():
                     data[col] = data[col].astype(bool)
                 elif target_type == "string":
                     data[col] = data[col].astype(str)
-            st.session_state.processed_data = data.copy()
+            st.session_state.processed_data = data.copy(deep=True)
             st.success("Data types successfully converted.")
             display_dataset_info(data)
 
@@ -105,145 +105,20 @@ def main():
         st.subheader("Data Visualization 📊")
 
         if st.button("Generate Histograms for All Features"):
-    st.subheader("Feature Histograms")
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
-    st.subheader("Feature Histograms")
-    
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        
-    else:
-        st.warning("No numeric columns available for histograms.")
-    st.subheader("Feature Histograms")
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
-numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
-        
-        numeric_columns = data.select_dtypes(include=[np.number]).columns
-        if len(numeric_columns) > 0:
-            fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-            if len(numeric_columns) == 1:
-                axes = [axes]
-            for ax, column in zip(axes, numeric_columns):
-                data[column].hist(bins=20, ax=ax)
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-            st.pyplot(fig)
-        else:
-            st.warning("No numeric columns available for histograms.")
-    
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
-    
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    if len(numeric_columns) > 0:
-        fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    else:
-        st.warning("No numeric columns available for histograms.")
-            
+            st.subheader("Feature Histograms")
             numeric_columns = data.select_dtypes(include=[np.number]).columns
-            fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-            if len(numeric_columns) == 1:
-                axes = [axes]
-            for ax, column in zip(axes, numeric_columns):
-                data[column].hist(bins=20, ax=ax)
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
-            st.pyplot(fig)
-        
-        numeric_columns = data.select_dtypes(include=[np.number]).columns
-        fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-        if len(numeric_columns) == 1:
-            axes = [axes]
-        for ax, column in zip(axes, numeric_columns):
-            data[column].hist(bins=20, ax=ax)
-            ax.set_title(f"Histogram: {column}")
-            ax.set_xlabel(column)
-            ax.set_ylabel("Frequency")
-        st.pyplot(fig)
-    
-    numeric_columns = data.select_dtypes(include=[np.number]).columns
-    fig, axes = plt.subplots(len(numeric_columns), 1, figsize=(8, 5 * len(numeric_columns)))
-    if len(numeric_columns) == 1:
-        axes = [axes]
-    for ax, column in zip(axes, numeric_columns):
-        data[column].hist(bins=20, ax=ax)
-        ax.set_title(f"Histogram: {column}")
-        ax.set_xlabel(column)
-        ax.set_ylabel("Frequency")
-    st.pyplot(fig)
-            
-            numeric_columns = data.select_dtypes(include=[np.number]).columns
-            for column in numeric_columns:
-                fig, ax = plt.subplots()
-                data[column].hist(bins=20, ax=ax)
-                ax.set_title(f"Histogram: {column}")
-                ax.set_xlabel(column)
-                ax.set_ylabel("Frequency")
+            if len(numeric_columns) > 0:
+                fig, axes = plt.subplots(nrows=len(numeric_columns), figsize=(8, 5 * len(numeric_columns)))
+                if len(numeric_columns) == 1:
+                    axes = [axes]
+                for ax, column in zip(axes, numeric_columns):
+                    data[column].hist(bins=20, ax=ax)
+                    ax.set_title(f"Histogram: {column}")
+                    ax.set_xlabel(column)
+                    ax.set_ylabel("Frequency")
                 st.pyplot(fig)
+            else:
+                st.warning("No numeric columns available for histograms.")
 
         # Correlation matrix
         if st.button("Show Correlation Matrix 🔗"):
