@@ -81,6 +81,10 @@ def main():
     columns_to_delete = st.multiselect("Select columns to delete", options=data.columns.tolist())
     if st.button("Delete Selected Columns"):
         data.drop(columns=columns_to_delete, inplace=True)
+        st.session_state.processed_data = data.copy(deep=True)
+        st.success("Selected columns deleted.")
+        st.rerun()
+        data.drop(columns=columns_to_delete, inplace=True)
     st.session_state.processed_data = data.copy(deep=True)
     st.success("Selected columns deleted.")
     display_dataset_info(data)
