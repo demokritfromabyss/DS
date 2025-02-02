@@ -66,7 +66,11 @@ def main():
     # Step 2: Data selection slider
     data = st.session_state.processed_data.copy()
     if data is not None:
-        row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
+        if data is not None and not data.empty:
+            row_count = st.slider("Select number of rows to process", min_value=10, max_value=min(len(data), 10000), value=10)
+            data = data.iloc[:row_count]
+        else:
+            st.warning("Dataset is empty or not loaded properly.")
         data = data.iloc[:row_count]
         
         # Step 3: Display dataset info
