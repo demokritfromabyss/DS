@@ -20,6 +20,22 @@ def load_data(url):
         st.error(f"Error loading dataset: {e}")
         return None
 
+def display_dataset_info(data):
+    """Display general dataset information."""
+    st.subheader("Dataset Overview")
+    st.write("**First 10 Rows:**")
+    st.write(data.head(10))
+    st.write("**Dataset Info:**")
+    st.text(data.info())
+    st.write("**Descriptive Statistics:**")
+    st.write(data.describe())
+    
+    st.write("**Missing Values:**")
+    st.write(data.isnull().sum())
+    
+    st.write("**Duplicate Rows:**")
+    st.write(data.duplicated().sum())
+
 def main():
     """Main function to run Streamlit app."""
     st.title("Automated Data Preprocessing and EDA App 🚀")
@@ -45,8 +61,7 @@ def main():
         row_count = st.slider("Select number of rows to process", min_value=10, max_value=len(data), value=10)
         data = data.iloc[:row_count]  # Process only selected number of rows
 
-        st.write("**Preview of the dataset:**")
-        st.write(data.head())
+        display_dataset_info(data)
 
         # Column deletion
         st.subheader("Column Deletion 🗑️")
@@ -54,12 +69,12 @@ def main():
         if st.button("Delete Selected Columns"):
             data.drop(columns=columns_to_delete, inplace=True)
             st.success("Selected columns deleted.")
-            st.write(data.head())
+            display_dataset_info(data)
 
         # Data type conversion
         st.subheader("Change Data Types 🔄")
         selected_columns = st.multiselect("Select columns to convert", data.columns)
-        target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime"])
+        target_type = st.selectbox("Select target data type", ["int", "float", "object", "datetime", "category", "bool", "string"])
 
         if st.button("Convert Data Type"):
             for col in selected_columns:
@@ -71,8 +86,14 @@ def main():
                     data[col] = data[col].astype(str)
                 elif target_type == "datetime":
                     data[col] = pd.to_datetime(data[col], errors='coerce')
+                elif target_type == "category":
+                    data[col] = data[col].astype('category')
+                elif target_type == "bool":
+                    data[col] = data[col].astype(bool)
+                elif target_type == "string":
+                    data[col] = data[col].astype(str)
             st.success("Data types successfully converted.")
-            st.write(data.head())
+            display_dataset_info(data)
 
         # Visualization
         st.subheader("Data Visualization 📊")
@@ -98,37 +119,17 @@ def main():
             alpha = st.slider("Select point transparency", 0.0, 1.0, 0.5)
 
         if st.button("Generate Selected Chart"):
+            fig, ax = plt.subplots()
             if plot_type == "Histogram":
-                for feature in selected_features:
-                    fig, ax = plt.subplots()
-                    data[feature].hist(bins=20, ax=ax, color=color)
-                    ax.set_title(f"Histogram: {feature}")
-                    ax.set_xlabel(feature)
-                    ax.set_ylabel("Frequency")
-                    if grid:
-                        ax.grid(True)
-                    st.pyplot(fig)
-
+                data[selected_features].hist(bins=20, ax=ax, color=color)
             elif plot_type == "Boxplot":
-                fig, ax = plt.subplots()
                 sns.boxplot(data=data[selected_features], ax=ax, palette=[color])
-                ax.set_title("Boxplot")
-                if grid:
-                    ax.grid(True)
-                st.pyplot(fig)
-
-            elif plot_type == "Scatter":
-                if len(selected_features) == 2:
-                    fig, ax = plt.subplots()
-                    data.plot.scatter(x=selected_features[0], y=selected_features[1], ax=ax, color=color, alpha=alpha)
-                    ax.set_title(f"Scatter plot: {selected_features[0]} vs {selected_features[1]}")
-                    ax.set_xlabel(selected_features[0])
-                    ax.set_ylabel(selected_features[1])
-                    if grid:
-                        ax.grid(True)
-                    st.pyplot(fig)
-                else:
-                    st.error("For scatter plots, please select exactly 2 features.")
+            elif plot_type == "Scatter" and len(selected_features) == 2:
+                data.plot.scatter(x=selected_features[0], y=selected_features[1], ax=ax, color=color, alpha=alpha)
+            ax.set_title(f"{plot_type} Plot")
+            if grid:
+                ax.grid(True)
+            st.pyplot(fig)
 
         # Correlation matrix
         if st.button("Show Correlation Matrix 🔗"):
